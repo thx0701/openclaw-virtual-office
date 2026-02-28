@@ -179,6 +179,12 @@ openclaw-virtual-office/
 └── README.md
 ```
 
+## Related Projects
+
+- [openclaw-virtual-office (mogilevtsevdmitry)](https://github.com/mogilevtsevdmitry/openclaw-virtual-office) — Phaser 3 + NestJS + PostgreSQL version with office zones (work, rest, smoking area)
+- [openclaw-office (wickedapp)](https://github.com/wickedapp/openclaw-office) — AI-generated office scenes with cyberpunk themes, Next.js dashboard
+- [openclaw-world (ChenKuanSun)](https://github.com/ChenKuanSun/openclaw-world) — 3D lobster avatars in Three.js with Nostr P2P relay
+
 ## Credits
 
 - **Office pixel art**: [Free Office Pixel Art by Arlan_TR](https://arlantr.itch.io/free-office-pixel-art) (free for personal & commercial use)

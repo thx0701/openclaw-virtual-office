@@ -170,6 +170,12 @@ openclaw-virtual-office/
 └── README.md
 ```
 
+## 相關專案
+
+- [openclaw-virtual-office (mogilevtsevdmitry)](https://github.com/mogilevtsevdmitry/openclaw-virtual-office) — Phaser 3 + NestJS + PostgreSQL 版，有辦公室分區（工作區、休息區、吸菸區）
+- [openclaw-office (wickedapp)](https://github.com/wickedapp/openclaw-office) — AI 生成辦公室場景，cyberpunk 風格，Next.js Dashboard
+- [openclaw-world (ChenKuanSun)](https://github.com/ChenKuanSun/openclaw-world) — 3D 龍蝦角色 (Three.js)，支援 Nostr P2P 中繼
+
 ## 致謝
 
 - **辦公室像素素材**：[Free Office Pixel Art by Arlan_TR](https://arlantr.itch.io/free-office-pixel-art)（可免費商用）
