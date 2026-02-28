@@ -35,15 +35,16 @@
 
 不只 Lark，任何 OpenClaw 支援的 channel 都能用：
 
-| Channel | Session 對應方式 |
-|---------|-----------------|
-| **Lark / 飛書** | 1 個群組 = 1 個 Agent（建議：多人 + 1 Bot 共群）|
-| **Telegram** | 1 個群組或 1 個私聊 = 1 個 Agent |
-| **Discord** | 1 個頻道或 1 個 Thread = 1 個 Agent |
-| **Slack** | 1 個頻道 = 1 個 Agent |
-| **Signal / WhatsApp** | 1 個群組 = 1 個 Agent |
+| Channel | 多人+Bot 共群？ | Session Key 格式 | sessionMatch 範例 |
+|---------|:-:|---|---|
+| **Lark / 飛書** | ✅ | `agent:main:feishu:group:oc_xxx` | `oc_xxx`（群組 ID）|
+| **Telegram** | ✅ | `agent:main:telegram:group:-100xxx` | `-100xxx`（群組 ID）|
+| **Discord** | ✅ | `agent:main:discord:channel:123xxx` | `123xxx`（頻道 ID）|
+| **Slack** | ✅ | `agent:main:slack:channel:C0xxx` | `C0xxx`（頻道 ID）|
+| **Signal** | ✅ | `agent:main:signal:group:base64xxx` | 群組 ID |
+| **WhatsApp** | ✅ | `agent:main:whatsapp:group:xxx@g.us` | 群組 ID |
 
-核心概念：**每個 session 對應辦公室裡的一張桌子**。在 `config.json` 裡設定 session key 的匹配規則即可。
+所有 channel 運作方式相同：**多個真人 + 1 個 Bot 在同一個群組**。每個群組 = 1 個 OpenClaw session = 辦公室裡的一張桌子。在 `config.json` 的 `sessionMatch` 填入群組/頻道 ID 即可匹配。
 
 ## 功能
 

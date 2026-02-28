@@ -37,15 +37,16 @@ Each group = one desk in the virtual office. The dashboard shows who's busy, idl
 
 This works with **any** OpenClaw-supported channel, not just Lark:
 
-| Channel | Session Mapping |
-|---------|----------------|
-| **Lark / Feishu** | 1 group chat = 1 agent (recommended: multi-user + 1 bot per group) |
-| **Telegram** | 1 group or 1 DM = 1 agent |
-| **Discord** | 1 channel or 1 thread = 1 agent |
-| **Slack** | 1 channel = 1 agent |
-| **Signal / WhatsApp** | 1 group = 1 agent |
+| Channel | Multi-user + Bot? | Session Key Format | sessionMatch Example |
+|---------|:-:|---|---|
+| **Lark / Feishu** | ✅ | `agent:main:feishu:group:oc_xxx` | `oc_xxx` (group ID) |
+| **Telegram** | ✅ | `agent:main:telegram:group:-100xxx` | `-100xxx` (group ID) |
+| **Discord** | ✅ | `agent:main:discord:channel:123xxx` | `123xxx` (channel ID) |
+| **Slack** | ✅ | `agent:main:slack:channel:C0xxx` | `C0xxx` (channel ID) |
+| **Signal** | ✅ | `agent:main:signal:group:base64xxx` | group ID |
+| **WhatsApp** | ✅ | `agent:main:whatsapp:group:xxx@g.us` | group ID |
 
-The key idea: **each session maps to a desk in the virtual office**. Configure `config.json` to match your session keys.
+All channels work the same way: **multiple real team members + 1 bot in one group chat**. Each group = 1 OpenClaw session = 1 desk in the virtual office. Just set `sessionMatch` in `config.json` to the group/channel ID.
 
 ## Features
 
