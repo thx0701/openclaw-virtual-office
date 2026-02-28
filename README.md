@@ -1,5 +1,7 @@
 # 🏢 OpenClaw Virtual Office
 
+[📖 繁體中文說明](README.zh-TW.md)
+
 A pixel-art virtual office dashboard that visualizes your [OpenClaw](https://github.com/openclaw/openclaw) agent sessions in real-time.
 
 ![OpenClaw Virtual Office Screenshot](screenshot.png)
