@@ -48,6 +48,8 @@ This works with **any** OpenClaw-supported channel, not just Lark:
 
 All channels work the same way: **multiple real team members + 1 bot in one group chat**. Each group = 1 OpenClaw session = 1 desk in the virtual office. Just set `sessionMatch` in `config.json` to the group/channel ID.
 
+> **Note:** This project has only been tested with **Lark (Larksuite) / Feishu**. Other channels should work with the same session-matching logic, but are untested. PRs and feedback welcome!
+
 ## Features
 
 - 🎨 **Pixel art office** — retro RPG-style 2D top-down view

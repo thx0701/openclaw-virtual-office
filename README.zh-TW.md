@@ -46,6 +46,8 @@
 
 所有 channel 運作方式相同：**多個真人 + 1 個 Bot 在同一個群組**。每個群組 = 1 個 OpenClaw session = 辦公室裡的一張桌子。在 `config.json` 的 `sessionMatch` 填入群組/頻道 ID 即可匹配。
 
+> **注意：** 本專案目前僅在 **Lark (Larksuite) / 飛書** 上測試過。其他 channel 理論上可用相同的 session 匹配邏輯運作，但尚未實測。歡迎提交 PR 或回報測試結果！
+
 ## 功能
 
 - 🎨 **像素風辦公室** — 復古 RPG 風格 2D 俯視圖
