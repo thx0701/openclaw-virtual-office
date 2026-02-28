@@ -315,22 +315,64 @@ function renderAgents(agents) {
   document.getElementById('online-count').textContent = `${onlineCount}/${agents.length}`;
 }
 
-// Fetch real status
+// --- WebSocket with fallback to polling ---
+let ws = null;
+let wsRetry = 0;
+
+function onStatusUpdate(data) {
+  renderAgents(data.agents);
+  const t = new Date(data.timestamp).toLocaleTimeString('zh-TW', {hour12:false});
+  document.getElementById('last-update').textContent = '⚡ ' + t;
+}
+
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected');
+    wsRetry = 0;
+    document.getElementById('last-update').textContent = '⚡ 即時連線';
+  };
+  
+  ws.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      onStatusUpdate(data);
+    } catch(err) { console.warn('WS parse error', err); }
+  };
+  
+  ws.onclose = () => {
+    console.log('🔌 WebSocket disconnected, retrying...');
+    document.getElementById('last-update').textContent = '⏳ 重連中...';
+    wsRetry++;
+    setTimeout(connectWS, Math.min(wsRetry * 2000, 30000));
+  };
+  
+  ws.onerror = () => { ws.close(); };
+}
+
+// Fallback: poll status.json if WS not available
 async function fetchStatus() {
   try {
     const resp = await fetch('status.json?t=' + Date.now());
     const data = await resp.json();
-    renderAgents(data.agents);
-    document.getElementById('last-update').textContent = 
-      '更新: ' + new Date(data.timestamp).toLocaleTimeString('zh-TW', {hour12:false});
+    onStatusUpdate(data);
   } catch(e) {
-    console.warn('Failed to fetch status:', e);
+    console.warn('Poll failed:', e);
   }
 }
 
-// Initial render + poll every 30s
+// Try WebSocket first, fallback to polling
+try {
+  connectWS();
+} catch(e) {
+  console.log('WebSocket not available, using polling');
+  fetchStatus();
+  setInterval(fetchStatus, 30000);
+}
+// Also do initial fetch in case WS is slow
 fetchStatus();
-setInterval(fetchStatus, 30000);
 
 // Walking character random movement
 const walker = document.getElementById('walker-ashley');

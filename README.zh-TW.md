@@ -110,23 +110,32 @@ python3 refresh-status.py --loop 30
 
 這會呼叫 `openclaw sessions list --json` 並寫入 `status.json`。
 
-### 4. 啟動 Web 伺服器
+### 4. 啟動伺服器
+
+**方式 A：WebSocket 伺服器（推薦）**
 
 ```bash
-python3 -m http.server 18899 --bind 0.0.0.0
+node server.js
 ```
 
-瀏覽器開啟 `http://localhost:18899` 即可看到。
+一體化伺服器，功能包含：
+- 在 `http://0.0.0.0:18899` 提供 Dashboard
+- 透過 WebSocket (`ws://0.0.0.0:18899/ws`) 即時推送狀態
+- 每 10 秒輪詢 OpenClaw session
+- 偵測到狀態變化立即廣播
+- 同時寫入 `status.json`（向下相容）
 
-### 5. （選用）背景執行
+**方式 B：簡易靜態伺服器（無 WebSocket）**
 
 ```bash
 # 啟動更新程式
-nohup python3 refresh-status.py --loop 30 > /tmp/office-refresh.log 2>&1 &
+python3 refresh-status.py --loop 30 &
 
 # 啟動網頁伺服器
-nohup python3 -m http.server 18899 --bind 0.0.0.0 > /tmp/office-server.log 2>&1 &
+python3 -m http.server 18899 --bind 0.0.0.0
 ```
+
+Dashboard 會自動偵測：有 WebSocket 就用即時推送，沒有就 fallback 到 30 秒輪詢。
 
 ## 狀態判定邏輯
 

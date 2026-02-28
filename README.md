@@ -112,23 +112,32 @@ python3 refresh-status.py --loop 30
 
 This calls `openclaw sessions list --json` and writes `status.json`.
 
-### 4. Serve the Dashboard
+### 4. Start the Server
+
+**Option A: WebSocket server (recommended)**
 
 ```bash
-python3 -m http.server 18899 --bind 0.0.0.0
+node server.js
 ```
 
-Open `http://localhost:18899` in your browser.
+This starts an all-in-one server that:
+- Serves the dashboard on `http://0.0.0.0:18899`
+- Pushes real-time updates via WebSocket (`ws://0.0.0.0:18899/ws`)
+- Polls OpenClaw sessions every 10 seconds
+- Auto-detects status changes and broadcasts immediately
+- Also writes `status.json` for backward compatibility
 
-### 5. (Optional) Run Both in Background
+**Option B: Simple static server (no WebSocket)**
 
 ```bash
 # Start refresher
-nohup python3 refresh-status.py --loop 30 > /tmp/office-refresh.log 2>&1 &
+python3 refresh-status.py --loop 30 &
 
 # Start web server
-nohup python3 -m http.server 18899 --bind 0.0.0.0 > /tmp/office-server.log 2>&1 &
+python3 -m http.server 18899 --bind 0.0.0.0
 ```
+
+The dashboard auto-detects: if WebSocket is available, it uses real-time push; otherwise falls back to 30s polling.
 
 ## Status Logic
 
