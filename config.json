@@ -1,0 +1,41 @@
+{
+  "title": "OpenClaw Virtual Office",
+  "refreshInterval": 30,
+  "agents": [
+    {
+      "id": "main",
+      "name": "小機 🔧",
+      "sprite": "boss.png",
+      "sessionMatch": "oc_b2331eeae9ef02caf25c3d0bcc4add8c",
+      "role": "Gateway 主控"
+    },
+    {
+      "id": "tech",
+      "name": "技術部",
+      "sprite": "worker1.png",
+      "sessionMatch": "tech",
+      "role": "技術支援"
+    },
+    {
+      "id": "admin",
+      "name": "行政會計特助",
+      "sprite": "worker2.png",
+      "sessionMatch": "admin",
+      "role": "行政會計"
+    },
+    {
+      "id": "listing",
+      "name": "上架工",
+      "sprite": "worker4.png",
+      "sessionMatch": "listing",
+      "role": "商品上架"
+    },
+    {
+      "id": "marketing",
+      "name": "行銷廣告",
+      "sprite": "Julia_PC.png",
+      "sessionMatch": "marketing",
+      "role": "行銷廣告"
+    }
+  ]
+}

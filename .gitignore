@@ -1,0 +1,4 @@
+status.json
+*.log
+__pycache__/
+.DS_Store

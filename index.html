@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Virtual Office</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 10px; }
+  
+  .pixel { image-rendering: pixelated; image-rendering: crisp-edges; }
+  
+  .wrapper { position: relative; }
+  
+  /* Office floor */
+  .office {
+    position: relative;
+    width: 960px; height: 580px;
+    background: #5a7a5a;
+    border: 4px solid #2a2a4a;
+    overflow: hidden;
+    image-rendering: pixelated;
+  }
+  
+  /* Floor pattern */
+  .floor {
+    position: absolute; inset: 0;
+    background:
+      repeating-conic-gradient(#c8b89a 0% 25%, #bfaf8f 0% 50%) 0 0 / 64px 64px;
+  }
+  
+  /* Wall */
+  .wall {
+    position: absolute; top: 0; left: 0; right: 0; height: 64px;
+    background: linear-gradient(180deg, #7a8aaa 0%, #6a7a9a 70%, #5a6a8a 100%);
+    border-bottom: 4px solid #4a5a7a;
+    z-index: 1;
+  }
+  .wall-title {
+    position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+    color: #cdf; font-size: 16px; font-weight: bold; letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(170,200,255,0.6);
+  }
+  
+  /* Sprite objects */
+  .sprite {
+    position: absolute;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Agent at desk (using worker sprites) */
+  .workstation {
+    position: absolute;
+    width: 128px; height: 128px;
+    z-index: 5;
+  }
+  .workstation img {
+    width: 128px; height: 128px;
+    image-rendering: pixelated;
+  }
+  
+  /* Name label */
+  .workstation .label {
+    position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 11px; color: #fff;
+    background: rgba(0,0,0,0.75);
+    padding: 2px 8px;
+    border-radius: 3px;
+    z-index: 20;
+  }
+  
+  /* Status dot on workstation */
+  .workstation .status-dot {
+    position: absolute; top: 4px; right: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.4);
+    z-index: 20;
+    animation: pulse 2s infinite;
+  }
+  
+  /* Task bubble on hover */
+  .workstation .task-bubble {
+    position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 10px; color: #ddd;
+    background: rgba(20,20,50,0.95);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #556;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .workstation:hover .task-bubble { opacity: 1; }
+  
+  /* Walking character (Julia) */
+  .walker {
+    position: absolute;
+    width: 64px; height: 64px;
+    overflow: hidden;
+    z-index: 10;
+    transition: left 3s linear, top 3s linear;
+    image-rendering: pixelated;
+  }
+  .walker .sprite-sheet {
+    position: absolute; top: 0; left: 0;
+    height: 64px;
+    image-rendering: pixelated;
+    animation: walk-cycle 0.6s steps(4) infinite;
+  }
+  @keyframes walk-cycle {
+    from { transform: translateX(0); }
+    to { transform: translateX(-256px); }
+  }
+  .walker .walker-label {
+    position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 9px; color: #ff0; 
+    background: rgba(0,0,0,0.7);
+    padding: 1px 5px; border-radius: 2px;
+  }
+  
+  /* Decoration sprites */
+  .deco {
+    position: absolute;
+    image-rendering: pixelated;
+    z-index: 3;
+  }
+  
+  /* Status colors */
+  .st-online { background: #4f4; box-shadow: 0 0 6px #4f4; }
+  .st-busy { background: #fa0; box-shadow: 0 0 6px #fa0; }
+  .st-idle { background: #48f; box-shadow: 0 0 6px #48f; }
+  .st-offline { background: #666; box-shadow: none; animation: none; }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  
+  /* Busy indicator - floating bubble */
+  .workstation.busy::after {
+    content: '💬';
+    position: absolute; top: -8px; left: 8px;
+    font-size: 16px;
+    animation: float-bubble 1.5s ease-in-out infinite;
+    z-index: 25;
+  }
+  @keyframes float-bubble {
+    0%, 100% { transform: translateY(0); opacity: 0.8; }
+    50% { transform: translateY(-8px); opacity: 1; }
+  }
+  
+  /* Side panel */
+  .panel {
+    position: absolute; top: 10px; right: -240px;
+    width: 225px;
+    background: rgba(15,15,35,0.95);
+    border: 2px solid #446;
+    border-radius: 8px;
+    padding: 14px;
+    color: #ccc;
+    font-size: 11px;
+  }
+  .panel h3 {
+    color: #8af; font-size: 14px; margin-bottom: 10px;
+    border-bottom: 1px solid #335; padding-bottom: 6px;
+  }
+  .agent-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #1a1a3a;
+  }
+  .agent-row .dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .agent-row .aname { color: #eee; font-weight: bold; font-size: 12px; }
+  .agent-row .astatus { color: #888; font-size: 9px; margin-top: 1px; }
+  
+  /* Clock */
+  .clock {
+    position: absolute; top: 10px; left: -180px;
+    width: 165px;
+    background: rgba(15,15,35,0.95);
+    border: 2px solid #446;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #8af;
+    font-size: 22px; font-weight: bold;
+    text-align: center;
+  }
+  .clock .date { font-size: 11px; color: #888; margin-top: 2px; }
+  .clock .uptime { font-size: 9px; color: #666; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="clock">
+    <div id="time">00:00:00</div>
+    <div class="date" id="date"></div>
+    <div class="uptime">Gateway uptime: 3d 14h</div>
+    <div class="uptime" id="last-update">更新: --:--:--</div>
+  </div>
+
+  <div class="office">
+    <div class="floor"></div>
+    <div class="wall">
+      <div class="wall-title">🏢 OpenClaw Virtual Office</div>
+    </div>
+    
+    <!-- Decorations -->
+    <img class="deco" src="assets/office/plant.png" style="left:16px; top:72px; width:48px; height:48px;">
+    <img class="deco" src="assets/office/plant.png" style="left:896px; top:72px; width:48px; height:48px;">
+    <img class="deco" src="assets/office/coffee-maker.png" style="left:820px; top:440px; width:96px; height:96px;">
+    <img class="deco" src="assets/office/cabinet.png" style="left:16px; top:440px; width:96px; height:96px;">
+    <img class="deco" src="assets/office/printer.png" style="left:130px; top:460px; width:80px; height:80px;">
+    <img class="deco" src="assets/office/water-cooler.png" style="left:740px; top:480px; width:48px; height:96px;">
+    <img class="deco" src="assets/office/office-partitions-1.png" style="left:16px; top:300px; width:96px; height:96px;">
+    
+    <!-- Meeting table -->
+    <img class="deco" src="assets/office/writing-table.png" style="left:400px; top:380px; width:160px; height:160px;">
+    
+    <!-- Dynamic agent workstations -->
+    <div id="agents-container"></div>
+    
+    <!-- Walking Julia (represents 行銷廣告 walking around) -->
+    <div class="walker" id="walker-ashley" style="left:650px; top:350px;">
+      <img class="sprite-sheet" src="assets/office/Julia_walk_Rigth.png" style="width:256px;">
+      <div class="walker-label">行銷廣告 ☕</div>
+    </div>
+    
+  </div>
+
+  <div class="panel">
+    <h3>📊 Agents: <span id="online-count">5</span>/5 在線</h3>
+    <div id="agent-list"></div>
+  </div>
+</div>
+
+<script>
+const statusLabels = {
+  online: { cls: 'st-online', label: '🟢 在線' },
+  busy: { cls: 'st-busy', label: '🟠 忙碌中' },
+  idle: { cls: 'st-idle', label: '🔵 閒置' },
+  offline: { cls: 'st-offline', label: '⚫ 離線' },
+};
+
+const DESK_POSITIONS = [
+  { left: 60, top: 100 },
+  { left: 230, top: 100 },
+  { left: 400, top: 100 },
+  { left: 570, top: 100 },
+  { left: 740, top: 100 },
+];
+
+// Render all agents from data
+function renderAgents(agents) {
+  const container = document.getElementById('agents-container');
+  const listEl = document.getElementById('agent-list');
+  container.innerHTML = '';
+  listEl.innerHTML = '';
+  
+  let onlineCount = 0;
+  
+  agents.forEach((a, i) => {
+    const pos = DESK_POSITIONS[i] || { left: 60 + i * 170, top: 100 };
+    const s = statusLabels[a.status] || statusLabels.offline;
+    if (a.status !== 'offline') onlineCount++;
+    
+    // Workstation in office
+    const ws = document.createElement('div');
+    ws.className = `workstation ${a.status === 'busy' ? 'busy' : ''}`;
+    ws.style.left = pos.left + 'px';
+    ws.style.top = pos.top + 'px';
+    
+    const isOccupied = a.status !== 'offline';
+    const sprite = isOccupied ? a.sprite : 'desk-with-pc.png';
+    
+    const timeStr = a.lastActive >= 0 ? `${a.lastActive}m ago` : '—';
+    
+    ws.innerHTML = `
+      <img src="assets/office/${sprite}">
+      <div class="status-dot ${s.cls}"></div>
+      <div class="label">${a.name}</div>
+      <div class="task-bubble">${a.task} (${timeStr})</div>
+    `;
+    container.appendChild(ws);
+    
+    // Panel row
+    const row = document.createElement('div');
+    row.className = 'agent-row';
+    row.innerHTML = `
+      <div class="dot ${s.cls}"></div>
+      <div>
+        <div class="aname">${a.name}</div>
+        <div class="astatus">${s.label} · ${a.task}</div>
+        ${a.tokens ? `<div class="astatus">🔤 ${(a.tokens/1000).toFixed(1)}k tokens</div>` : ''}
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+  
+  document.getElementById('online-count').textContent = `${onlineCount}/${agents.length}`;
+}
+
+// Fetch real status
+async function fetchStatus() {
+  try {
+    const resp = await fetch('status.json?t=' + Date.now());
+    const data = await resp.json();
+    renderAgents(data.agents);
+    document.getElementById('last-update').textContent = 
+      '更新: ' + new Date(data.timestamp).toLocaleTimeString('zh-TW', {hour12:false});
+  } catch(e) {
+    console.warn('Failed to fetch status:', e);
+  }
+}
+
+// Initial render + poll every 30s
+fetchStatus();
+setInterval(fetchStatus, 30000);
+
+// Walking character random movement
+const walker = document.getElementById('walker-ashley');
+const directions = {
+  right: 'Julia_walk_Rigth.png',
+  left: 'Julia_walk_Left.png',
+  down: 'Julia_walk_Foward.png',
+  up: 'Julia_walk_Up.png',
+};
+
+function moveWalker() {
+  const x = 300 + Math.random() * 500;
+  const y = 280 + Math.random() * 200;
+  const curX = parseFloat(walker.style.left);
+  const dir = x > curX ? 'right' : 'left';
+  walker.querySelector('.sprite-sheet').src = `assets/office/${directions[dir]}`;
+  walker.style.left = x + 'px';
+  walker.style.top = y + 'px';
+}
+setInterval(moveWalker, 4000);
+
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('time').textContent = now.toLocaleTimeString('zh-TW', {hour12: false});
+  document.getElementById('date').textContent = now.toLocaleDateString('zh-TW', {year:'numeric', month:'2-digit', day:'2-digit', weekday:'short'});
+}
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
