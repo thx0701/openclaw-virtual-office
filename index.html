@@ -243,6 +243,13 @@
 </div>
 
 <script>
+// Sanitize HTML to prevent XSS from status.json content
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
 const statusLabels = {
   online: { cls: 'st-online', label: '🟢 在線' },
   busy: { cls: 'st-busy', label: '🟠 忙碌中' },
@@ -284,10 +291,10 @@ function renderAgents(agents) {
     const timeStr = a.lastActive >= 0 ? `${a.lastActive}m ago` : '—';
     
     ws.innerHTML = `
-      <img src="assets/office/${sprite}">
+      <img src="assets/office/${esc(sprite)}">
       <div class="status-dot ${s.cls}"></div>
-      <div class="label">${a.name}</div>
-      <div class="task-bubble">${a.task} (${timeStr})</div>
+      <div class="label">${esc(a.name)}</div>
+      <div class="task-bubble">${esc(a.task)} (${esc(timeStr)})</div>
     `;
     container.appendChild(ws);
     
@@ -297,8 +304,8 @@ function renderAgents(agents) {
     row.innerHTML = `
       <div class="dot ${s.cls}"></div>
       <div>
-        <div class="aname">${a.name}</div>
-        <div class="astatus">${s.label} · ${a.task}</div>
+        <div class="aname">${esc(a.name)}</div>
+        <div class="astatus">${esc(s.label)} · ${esc(a.task)}</div>
         ${a.tokens ? `<div class="astatus">🔤 ${(a.tokens/1000).toFixed(1)}k tokens</div>` : ''}
       </div>
     `;
