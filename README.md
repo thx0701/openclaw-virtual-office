@@ -10,12 +10,14 @@ A pixel-art virtual office dashboard that visualizes your [OpenClaw](https://git
 
 **One Bot, Multiple Group Chats = Virtual Office Workers**
 
-This project is designed for teams using **Lark (Larksuite) / Feishu** with OpenClaw:
+This project works with **any OpenClaw-supported channel** — Lark (Larksuite), Telegram, Discord, Slack, Signal, WhatsApp, and more. It can be used by a single person or a whole team.
 
-- You run **1 OpenClaw Gateway** connected to your messaging platform (Lark, Telegram, Discord, Slack, etc.)
+- You run **1 OpenClaw Gateway** connected to your messaging platform
 - Each **group chat** is a separate session — a virtual "office worker" with a specific role
 - Real team members join these groups to collaborate with AI agents
 - This dashboard shows all agents' status at a glance, like a virtual office floor plan
+
+**Roadmap:** The long-term goal is to evolve into a **multi-user collaborative dashboard** with richer target information — showing not just agent status, but task details, message flow, and cross-session interactions.
 
 ### Example Setup (Lark)
 

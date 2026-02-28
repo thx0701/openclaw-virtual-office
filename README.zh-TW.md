@@ -8,12 +8,14 @@
 
 **一個 Bot + 多個群組 = 虛擬辦公室**
 
-這個專案是為使用 **Lark (Larksuite) / 飛書** 搭配 OpenClaw 的團隊設計的：
+本專案支援 **所有 OpenClaw 支援的 channel** — Lark (Larksuite)、Telegram、Discord、Slack、Signal、WhatsApp 等。一個人用或整個團隊用都可以。
 
-- 你只需要 **1 個 OpenClaw Gateway**，連接你的通訊平台（Lark、Telegram、Discord、Slack 等）
+- 你只需要 **1 個 OpenClaw Gateway**，連接你的通訊平台
 - 每個 **群組聊天** 就是一個獨立的 session — 對應一個虛擬「辦公室員工」，負責特定職務
 - 真人團隊成員加入這些群組，和 AI Agent 協作
 - 這個 Dashboard 一眼看到所有 Agent 的即時狀態，就像俯瞰辦公室
+
+**開發方向：** 長期目標是發展成 **多人協作的即時監控面板**，不只顯示 Agent 狀態，還包括任務細節、訊息流向、跨 session 互動等更豐富的資訊。
 
 ### 範例：Lark 工作流
 
