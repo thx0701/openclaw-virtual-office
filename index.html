@@ -76,6 +76,8 @@
     image-rendering: pixelated;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    border: 0; outline: 0;
+    will-change: contents;
   }
   /* Show top portion - head + shoulders + upper torso visible above desk */
   .workstation .char-container.seated {
@@ -89,7 +91,10 @@
     top: 0; left: 0;
     height: 64px;
     image-rendering: pixelated;
-    /* 6 frames, each 96px wide = 576px total */
+    -webkit-image-rendering: crisp-edges;
+    will-change: transform;
+    border: 0; outline: 0;
+    /* 6 frames, each 64px wide = 384px total */
     animation: work-anim 1.2s steps(6) infinite;
   }
   @keyframes work-anim {
@@ -169,11 +174,15 @@
     image-rendering: pixelated;
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    border: 0; outline: 0;
   }
   .walker .sprite-sheet {
     position: absolute; top: 0; left: 0;
     height: 64px;
     image-rendering: pixelated;
+    -webkit-image-rendering: crisp-edges;
+    will-change: transform;
+    border: 0; outline: 0;
     animation: walk-cycle 0.5s steps(6) infinite;
   }
   @keyframes walk-cycle {
