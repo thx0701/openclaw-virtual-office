@@ -88,12 +88,12 @@
   }
   .workstation .char-sprite {
     position: absolute;
-    top: 0; left: 0;
-    height: 64px;
+    top: -1px; left: 0;
+    height: 66px;  /* 64 + 2px to compensate for clip */
     image-rendering: pixelated;
-    -webkit-image-rendering: crisp-edges;
     will-change: transform;
-    border: 0; outline: 0;
+    clip-path: inset(1px 0);
+    -webkit-clip-path: inset(1px 0);
     /* 6 frames, each 64px wide = 384px total */
     animation: work-anim 1.2s steps(6) infinite;
   }
@@ -177,12 +177,12 @@
     border: 0; outline: 0;
   }
   .walker .sprite-sheet {
-    position: absolute; top: 0; left: 0;
-    height: 64px;
+    position: absolute; top: -1px; left: 0;
+    height: 66px;  /* 64 + 2px to compensate for clip */
     image-rendering: pixelated;
-    -webkit-image-rendering: crisp-edges;
     will-change: transform;
-    border: 0; outline: 0;
+    clip-path: inset(1px 0);
+    -webkit-clip-path: inset(1px 0);
     animation: walk-cycle 0.5s steps(6) infinite;
   }
   @keyframes walk-cycle {
