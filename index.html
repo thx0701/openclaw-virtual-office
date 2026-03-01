@@ -261,6 +261,12 @@
     <!-- Meeting table -->
     <img class="deco" src="assets/office/writing-table.png" style="left:400px; top:380px; width:160px; height:160px;">
     
+    <!-- Rest area: chairs (vertical layout) -->
+    <img class="deco" src="assets/office/chair.png" style="left:280px; top:440px; width:48px; height:48px;">
+    <img class="deco" src="assets/office/chair.png" style="left:280px; top:500px; width:48px; height:48px;">
+    <!-- Sink (far right, vertical layout) -->
+    <img class="deco" src="assets/office/sink.png" style="left:890px; top:380px; width:64px; height:64px;">
+    
     <!-- Dynamic agent workstations -->
     <div id="agents-container"></div>
     
@@ -316,11 +322,17 @@ const OBSTACLES = [
   // Office partitions
   { x: 0, y: 280, w: 120, h: 110 },
   // Cabinet + printer
-  { x: 0, y: 420, w: 220, h: 130 },
-  // Writing/meeting table
-  { x: 380, y: 360, w: 180, h: 180 },
-  // Water cooler + coffee maker
-  { x: 720, y: 460, w: 210, h: 120 },
+  { x: 0, y: 400, w: 240, h: 160 },
+  // Writing/meeting table (large margin — characters must go AROUND)
+  { x: 330, y: 310, w: 280, h: 260 },
+  // Coffee maker area
+  { x: 810, y: 430, w: 110, h: 110 },
+  // Water cooler
+  { x: 725, y: 465, w: 70, h: 110 },
+  // Sink (far right)
+  { x: 880, y: 370, w: 80, h: 80 },
+  // Chairs area (vertical)
+  { x: 270, y: 430, w: 65, h: 130 },
   // Wall
   { x: 0, y: 0, w: 960, h: 70 },
 ];
@@ -335,14 +347,44 @@ function isWalkable(x, y, size = 64) {
   return true;
 }
 
+// Check if the entire path from (x1,y1) to (x2,y2) is clear
+function isPathClear(x1, y1, x2, y2) {
+  const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) / 16; // check every 16px
+  for (let i = 0; i <= steps; i++) {
+    const t = steps > 0 ? i / steps : 0;
+    const px = x1 + (x2 - x1) * t;
+    const py = y1 + (y2 - y1) * t;
+    if (!isWalkable(px, py)) return false;
+  }
+  return true;
+}
+
+// Rest spots: places idle agents like to hang out
+const REST_SPOTS = [
+  { x: 800, y: 370, label: 'coffee' },    // In front of coffee maker
+  { x: 750, y: 410, label: 'water' },     // In front of water cooler
+  { x: 340, y: 450, label: 'chair1' },    // In front of chairs (standing)
+  { x: 340, y: 510, label: 'chair2' },    // In front of chair 2
+  { x: 870, y: 320, label: 'sink' },      // In front of sink
+  { x: 200, y: 340, label: 'walk1' },     // Open floor left
+  { x: 700, y: 310, label: 'walk2' },     // Open floor right
+  { x: 150, y: 400, label: 'walk3' },     // Near partitions
+];
+
 function randomWalkablePoint() {
-  // Try random points, fallback to known safe spots
+  // 70% chance: go to a rest spot, 30% chance: random walkable point
+  if (Math.random() < 0.7) {
+    const spot = REST_SPOTS[Math.floor(Math.random() * REST_SPOTS.length)];
+    // Add slight randomness so multiple agents don't stack exactly
+    return { x: spot.x + (Math.random() - 0.5) * 20, y: spot.y + (Math.random() - 0.5) * 20 };
+  }
+  // Random walkable point
   for (let i = 0; i < 50; i++) {
     const x = 30 + Math.random() * 880;
     const y = 270 + Math.random() * 250;
     if (isWalkable(x, y)) return { x, y };
   }
-  return { x: 300, y: 320 }; // Safe fallback
+  return { x: 300, y: 320 };
 }
 
 // Track active walkers
@@ -495,7 +537,10 @@ function moveWalkerById(id) {
   const dx = target.x - w.x, dy = target.y - w.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   
-  if (dist < 20) return; // too close, skip
+  if (dist < 20) { // too close, try again
+    w.moveTimer = setTimeout(() => moveWalkerById(id), 1000);
+    return;
+  }
   
   // Direction based on movement
   let dir;
@@ -523,8 +568,19 @@ function moveWalkerById(id) {
   w.x = target.x;
   w.y = target.y;
   
-  // Schedule next move after this one finishes + random pause (1-3s)
-  const pause = 1000 + Math.random() * 2000;
+  // Schedule next move: longer pause at rest spots (3-6s), shorter for walking (1-2s)
+  const isRestSpot = REST_SPOTS.some(s => Math.abs(s.x - target.x) < 30 && Math.abs(s.y - target.y) < 30);
+  const pause = isRestSpot ? (3000 + Math.random() * 3000) : (1000 + Math.random() * 1500);
+  
+  // At rest spots, switch to down-facing (idle stance) after arriving
+  if (isRestSpot) {
+    setTimeout(() => {
+      if (activeWalkers[id]) {
+        w.el.querySelector('.sprite-sheet').src = `assets/office/${w.prefix}-walk-down.png`;
+      }
+    }, duration * 1000 + 200);
+  }
+  
   w.moveTimer = setTimeout(() => moveWalkerById(id), duration * 1000 + pause);
 }
 
