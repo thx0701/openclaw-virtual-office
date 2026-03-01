@@ -36,6 +36,13 @@
       "sprite": "agent-marketing",
       "sessionMatch": "oc_c60e92c74088c980420b4e5b1065472f",
       "role": "行銷廣告"
+    },
+    {
+      "id": "dev",
+      "name": "開發部",
+      "sprite": "agent-dev",
+      "sessionMatch": "oc_ff3cef9252a5903ed5d20826007dfbc5",
+      "role": "開發部"
     }
   ]
 }

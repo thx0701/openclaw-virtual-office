@@ -74,11 +74,15 @@
     overflow: hidden;
     z-index: 14; /* Above desk (z-index 12) so upper body covers it */
     image-rendering: pixelated;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
   /* Show top portion - head + shoulders + upper torso visible above desk */
   .workstation .char-container.seated {
     height: 48px;
     overflow: hidden;
+    clip-path: inset(0 0 0 0);
+    -webkit-clip-path: inset(0 0 0 0);
   }
   .workstation .char-sprite {
     position: absolute;
@@ -156,11 +160,15 @@
     position: absolute;
     width: 64px; height: 64px;
     overflow: hidden;
+    clip-path: inset(0 0 0 0);
+    -webkit-clip-path: inset(0 0 0 0);
     z-index: 10;
     /* transition duration set dynamically via JS */
     transition-property: left, top;
     transition-timing-function: linear;
     image-rendering: pixelated;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
   .walker .sprite-sheet {
     position: absolute; top: 0; left: 0;
@@ -301,21 +309,23 @@ const SPRITE_MAP = {
   admin:     'agent-admin',
   listing:   'agent-listing',
   marketing: 'agent-marketing',
+  dev:       'agent-dev',
 };
 
 const DESK_POSITIONS = [
-  { left: 60,  top: 100 },
-  { left: 230, top: 100 },
-  { left: 400, top: 100 },
-  { left: 570, top: 100 },
-  { left: 740, top: 100 },
+  { left: 60,  top: 80 },
+  { left: 210, top: 80 },
+  { left: 360, top: 80 },
+  { left: 510, top: 80 },
+  { left: 660, top: 80 },
+  { left: 810, top: 80 },
 ];
 
 // ── Collision zones: rectangles where walkers cannot go ──
 // Format: {x, y, w, h} — furniture/deco bounding boxes
 const OBSTACLES = [
-  // Desks row (with margin)
-  { x: 40, y: 80, w: 850, h: 180 },
+  // Desks row (6 desks, with margin)
+  { x: 40, y: 60, w: 900, h: 200 },
   // Plants
   { x: 0, y: 60, w: 70, h: 60 },
   { x: 880, y: 60, w: 80, h: 60 },
