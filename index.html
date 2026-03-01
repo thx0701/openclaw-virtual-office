@@ -42,27 +42,68 @@
     text-shadow: 0 0 10px rgba(170,200,255,0.6);
   }
   
-  /* Sprite objects */
-  .sprite {
+  /* Decoration sprites */
+  .deco {
     position: absolute;
     image-rendering: pixelated;
-    image-rendering: crisp-edges;
+    z-index: 3;
   }
-  
-  /* Agent at desk (using worker sprites) */
+
+  /* ── Workstation: desk + animated character ── */
   .workstation {
     position: absolute;
-    width: 128px; height: 128px;
+    width: 128px; height: 160px;
     z-index: 5;
   }
-  .workstation img {
+
+  /* The desk image sits at bottom, covering character's lower body */
+  .workstation .desk-img {
+    position: absolute;
+    bottom: 0; left: 0;
     width: 128px; height: 128px;
     image-rendering: pixelated;
+    z-index: 12;
   }
-  
+
+  /* Animated character IN FRONT of desk (back facing camera, upper body covers desk) */
+  .workstation .char-container {
+    position: absolute;
+    /* Character sits at desk, back to camera, upper body overlaps desk */
+    bottom: 24px; left: 32px;
+    width: 64px; height: 64px;
+    overflow: hidden;
+    z-index: 14; /* Above desk (z-index 12) so upper body covers it */
+    image-rendering: pixelated;
+  }
+  /* Show top portion - head + shoulders + upper torso visible above desk */
+  .workstation .char-container.seated {
+    height: 48px;
+    overflow: hidden;
+  }
+  .workstation .char-sprite {
+    position: absolute;
+    top: 0; left: 0;
+    height: 64px;
+    image-rendering: pixelated;
+    /* 6 frames, each 96px wide = 576px total */
+    animation: work-anim 1.2s steps(6) infinite;
+  }
+  @keyframes work-anim {
+    from { transform: translateX(0); }
+    to { transform: translateX(-384px); }
+  }
+
+  /* Idle: slower subtle animation */
+  .workstation.idle .char-sprite {
+    animation: work-anim 2.4s steps(6) infinite;
+  }
+
+  /* Offline: no character, just empty desk */
+  .workstation.offline .char-container { display: none; }
+
   /* Name label */
   .workstation .label {
-    position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
     white-space: nowrap;
     font-size: 11px; color: #fff;
     background: rgba(0,0,0,0.75);
@@ -71,9 +112,9 @@
     z-index: 20;
   }
   
-  /* Status dot on workstation */
+  /* Status dot */
   .workstation .status-dot {
-    position: absolute; top: 4px; right: 4px;
+    position: absolute; top: 0px; right: 0px;
     width: 12px; height: 12px;
     border-radius: 50%;
     border: 2px solid rgba(0,0,0,0.4);
@@ -83,7 +124,7 @@
   
   /* Task bubble on hover */
   .workstation .task-bubble {
-    position: absolute; bottom: -36px; left: 50%; transform: translateX(-50%);
+    position: absolute; bottom: -38px; left: 50%; transform: translateX(-50%);
     white-space: nowrap;
     font-size: 10px; color: #ddd;
     background: rgba(20,20,50,0.95);
@@ -97,24 +138,39 @@
   }
   .workstation:hover .task-bubble { opacity: 1; }
   
-  /* Walking character (Julia) */
+  /* Busy typing indicator */
+  .workstation.busy::after {
+    content: '💬';
+    position: absolute; top: -12px; left: 12px;
+    font-size: 18px;
+    animation: float-bubble 1.5s ease-in-out infinite;
+    z-index: 25;
+  }
+  @keyframes float-bubble {
+    0%, 100% { transform: translateY(0); opacity: 0.8; }
+    50% { transform: translateY(-10px); opacity: 1; }
+  }
+
+  /* ── Walking character ── */
   .walker {
     position: absolute;
     width: 64px; height: 64px;
     overflow: hidden;
     z-index: 10;
-    transition: left 3s linear, top 3s linear;
+    /* transition duration set dynamically via JS */
+    transition-property: left, top;
+    transition-timing-function: linear;
     image-rendering: pixelated;
   }
   .walker .sprite-sheet {
     position: absolute; top: 0; left: 0;
     height: 64px;
     image-rendering: pixelated;
-    animation: walk-cycle 0.6s steps(4) infinite;
+    animation: walk-cycle 0.5s steps(6) infinite;
   }
   @keyframes walk-cycle {
     from { transform: translateX(0); }
-    to { transform: translateX(-256px); }
+    to { transform: translateX(-384px); }
   }
   .walker .walker-label {
     position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
@@ -122,13 +178,6 @@
     font-size: 9px; color: #ff0; 
     background: rgba(0,0,0,0.7);
     padding: 1px 5px; border-radius: 2px;
-  }
-  
-  /* Decoration sprites */
-  .deco {
-    position: absolute;
-    image-rendering: pixelated;
-    z-index: 3;
   }
   
   /* Status colors */
@@ -140,19 +189,6 @@
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
-  }
-  
-  /* Busy indicator - floating bubble */
-  .workstation.busy::after {
-    content: '💬';
-    position: absolute; top: -8px; left: 8px;
-    font-size: 16px;
-    animation: float-bubble 1.5s ease-in-out infinite;
-    z-index: 25;
-  }
-  @keyframes float-bubble {
-    0%, 100% { transform: translateY(0); opacity: 0.8; }
-    50% { transform: translateY(-8px); opacity: 1; }
   }
   
   /* Side panel */
@@ -203,7 +239,7 @@
   <div class="clock">
     <div id="time">00:00:00</div>
     <div class="date" id="date"></div>
-    <div class="uptime">Gateway uptime: 3d 14h</div>
+    <div class="uptime">Gateway uptime: —</div>
     <div class="uptime" id="last-update">更新: --:--:--</div>
   </div>
 
@@ -228,22 +264,17 @@
     <!-- Dynamic agent workstations -->
     <div id="agents-container"></div>
     
-    <!-- Walking Julia (represents 行銷廣告 walking around) -->
-    <div class="walker" id="walker-ashley" style="left:650px; top:350px;">
-      <img class="sprite-sheet" src="assets/office/Julia_walk_Rigth.png" style="width:256px;">
-      <div class="walker-label">行銷廣告 ☕</div>
-    </div>
-    
+    <!-- Walkers container (multiple idle agents) -->
+    <div id="walkers-container"></div>
   </div>
 
   <div class="panel">
-    <h3>📊 Agents: <span id="online-count">5</span>/5 在線</h3>
+    <h3>📊 Agents: <span id="online-count">0</span>/0 在線</h3>
     <div id="agent-list"></div>
   </div>
 </div>
 
 <script>
-// Sanitize HTML to prevent XSS from status.json content
 function esc(str) {
   const d = document.createElement('div');
   d.textContent = str || '';
@@ -257,41 +288,100 @@ const statusLabels = {
   offline: { cls: 'st-offline', label: '⚫ 離線' },
 };
 
+// Sprite mapping: agent id → MetroCity sprite prefix
+const SPRITE_MAP = {
+  main:      'agent-boss',
+  tech:      'agent-tech',
+  admin:     'agent-admin',
+  listing:   'agent-listing',
+  marketing: 'agent-marketing',
+};
+
 const DESK_POSITIONS = [
-  { left: 60, top: 100 },
+  { left: 60,  top: 100 },
   { left: 230, top: 100 },
   { left: 400, top: 100 },
   { left: 570, top: 100 },
   { left: 740, top: 100 },
 ];
 
-// Render all agents from data
+// ── Collision zones: rectangles where walkers cannot go ──
+// Format: {x, y, w, h} — furniture/deco bounding boxes
+const OBSTACLES = [
+  // Desks row (with margin)
+  { x: 40, y: 80, w: 850, h: 180 },
+  // Plants
+  { x: 0, y: 60, w: 70, h: 60 },
+  { x: 880, y: 60, w: 80, h: 60 },
+  // Office partitions
+  { x: 0, y: 280, w: 120, h: 110 },
+  // Cabinet + printer
+  { x: 0, y: 420, w: 220, h: 130 },
+  // Writing/meeting table
+  { x: 380, y: 360, w: 180, h: 180 },
+  // Water cooler + coffee maker
+  { x: 720, y: 460, w: 210, h: 120 },
+  // Wall
+  { x: 0, y: 0, w: 960, h: 70 },
+];
+
+function isWalkable(x, y, size = 64) {
+  // Check bounds
+  if (x < 10 || x + size > 950 || y < 70 || y + size > 570) return false;
+  // Check obstacles
+  for (const o of OBSTACLES) {
+    if (x + size > o.x && x < o.x + o.w && y + size > o.y && y < o.y + o.h) return false;
+  }
+  return true;
+}
+
+function randomWalkablePoint() {
+  // Try random points, fallback to known safe spots
+  for (let i = 0; i < 50; i++) {
+    const x = 30 + Math.random() * 880;
+    const y = 270 + Math.random() * 250;
+    if (isWalkable(x, y)) return { x, y };
+  }
+  return { x: 300, y: 320 }; // Safe fallback
+}
+
+// Track active walkers
+let activeWalkers = {}; // keyed by agent id
+
 function renderAgents(agents) {
   const container = document.getElementById('agents-container');
   const listEl = document.getElementById('agent-list');
+  const walkersContainer = document.getElementById('walkers-container');
   container.innerHTML = '';
   listEl.innerHTML = '';
   
   let onlineCount = 0;
+  let idleAgents = [];
   
   agents.forEach((a, i) => {
     const pos = DESK_POSITIONS[i] || { left: 60 + i * 170, top: 100 };
     const s = statusLabels[a.status] || statusLabels.offline;
     if (a.status !== 'offline') onlineCount++;
+    if (a.status === 'idle' || a.status === 'online') idleAgents.push(a);
     
-    // Workstation in office
-    const ws = document.createElement('div');
-    ws.className = `workstation ${a.status === 'busy' ? 'busy' : ''}`;
-    ws.style.left = pos.left + 'px';
-    ws.style.top = pos.top + 'px';
-    
-    const isOccupied = a.status !== 'offline';
-    const sprite = isOccupied ? a.sprite : 'desk-with-pc.png';
+    const spritePrefix = SPRITE_MAP[a.id] || 'agent-boss';
+    const isOccupied = a.status === 'busy';
+    const isIdle = a.status === 'idle' || a.status === 'online';
+    const isOffline = a.status === 'offline';
     
     const timeStr = a.lastActive >= 0 ? `${a.lastActive}m ago` : '—';
     
+    // Workstation — only show character seated if busy
+    const ws = document.createElement('div');
+    ws.className = `workstation ${isOccupied ? 'busy' : ''} ${isIdle ? 'idle' : ''} ${isOffline ? 'offline' : ''}`;
+    ws.style.left = pos.left + 'px';
+    ws.style.top = pos.top + 'px';
+    
     ws.innerHTML = `
-      <img src="assets/office/${esc(sprite)}">
+      <img class="desk-img" src="assets/office/desk-with-pc.png">
+      ${isOccupied ? `<div class="char-container seated">
+        <img class="char-sprite" src="assets/office/${esc(spritePrefix)}-walk-up.png" style="width:384px;">
+      </div>` : ''}
       <div class="status-dot ${s.cls}"></div>
       <div class="label">${esc(a.name)}</div>
       <div class="task-bubble">${esc(a.task)} (${esc(timeStr)})</div>
@@ -313,6 +403,39 @@ function renderAgents(agents) {
   });
   
   document.getElementById('online-count').textContent = `${onlineCount}/${agents.length}`;
+  
+  // ── Create/update walkers for idle agents ──
+  const currentIds = new Set(idleAgents.map(a => a.id));
+  
+  // Remove walkers that are no longer idle
+  for (const id of Object.keys(activeWalkers)) {
+    if (!currentIds.has(id)) {
+      activeWalkers[id].el.remove();
+      delete activeWalkers[id];
+    }
+  }
+  
+  // Add new walkers
+  for (const a of idleAgents) {
+    if (activeWalkers[a.id]) continue;
+    const prefix = SPRITE_MAP[a.id] || 'agent-boss';
+    const start = randomWalkablePoint();
+    
+    const el = document.createElement('div');
+    el.className = 'walker';
+    el.style.left = start.x + 'px';
+    el.style.top = start.y + 'px';
+    el.innerHTML = `
+      <img class="sprite-sheet" src="assets/office/${prefix}-walk-right.png" style="width:384px;">
+      <div class="walker-label">${esc(a.name)} ☕</div>
+    `;
+    walkersContainer.appendChild(el);
+    
+    activeWalkers[a.id] = { el, prefix, x: start.x, y: start.y, moveTimer: null };
+  }
+  
+  // Start/restart walker movement
+  startWalkers();
 }
 
 // --- WebSocket with fallback to polling ---
@@ -336,10 +459,7 @@ function connectWS() {
   };
   
   ws.onmessage = (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      onStatusUpdate(data);
-    } catch(err) { console.warn('WS parse error', err); }
+    try { onStatusUpdate(JSON.parse(e.data)); } catch(err) { console.warn('WS parse error', err); }
   };
   
   ws.onclose = () => {
@@ -352,47 +472,72 @@ function connectWS() {
   ws.onerror = () => { ws.close(); };
 }
 
-// Fallback: poll status.json if WS not available
 async function fetchStatus() {
   try {
     const resp = await fetch('status.json?t=' + Date.now());
     const data = await resp.json();
     onStatusUpdate(data);
-  } catch(e) {
-    console.warn('Poll failed:', e);
-  }
+  } catch(e) { console.warn('Poll failed:', e); }
 }
 
-// Try WebSocket first, fallback to polling
-try {
-  connectWS();
-} catch(e) {
-  console.log('WebSocket not available, using polling');
-  fetchStatus();
-  setInterval(fetchStatus, 30000);
-}
-// Also do initial fetch in case WS is slow
+try { connectWS(); } catch(e) { fetchStatus(); setInterval(fetchStatus, 30000); }
 fetchStatus();
 
-// Walking character random movement
-const walker = document.getElementById('walker-ashley');
-const directions = {
-  right: 'Julia_walk_Rigth.png',
-  left: 'Julia_walk_Left.png',
-  down: 'Julia_walk_Foward.png',
-  up: 'Julia_walk_Up.png',
-};
+// Walking characters - move all idle agents with consistent speed
+const dirMap = { right: 'walk-right', left: 'walk-left', down: 'walk-down', up: 'walk-up' };
+const WALK_SPEED = 40; // pixels per second (slow, casual pace)
 
-function moveWalker() {
-  const x = 300 + Math.random() * 500;
-  const y = 280 + Math.random() * 200;
-  const curX = parseFloat(walker.style.left);
-  const dir = x > curX ? 'right' : 'left';
-  walker.querySelector('.sprite-sheet').src = `assets/office/${directions[dir]}`;
-  walker.style.left = x + 'px';
-  walker.style.top = y + 'px';
+function moveWalkerById(id) {
+  const w = activeWalkers[id];
+  if (!w) return;
+  
+  const target = randomWalkablePoint();
+  const dx = target.x - w.x, dy = target.y - w.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  
+  if (dist < 20) return; // too close, skip
+  
+  // Direction based on movement
+  let dir;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    dir = dx > 0 ? 'right' : 'left';
+  } else {
+    dir = dy > 0 ? 'down' : 'up';
+  }
+  
+  // Calculate duration based on distance for consistent speed
+  const duration = dist / WALK_SPEED;
+  
+  // 1. Set sprite direction FIRST (before moving)
+  w.el.querySelector('.sprite-sheet').src = `assets/office/${w.prefix}-${dirMap[dir]}.png`;
+  
+  // 2. Set transition duration based on distance
+  w.el.style.transitionDuration = `${duration}s`;
+  
+  // 3. Move (slight delay to ensure sprite swap renders first)
+  requestAnimationFrame(() => {
+    w.el.style.left = target.x + 'px';
+    w.el.style.top = target.y + 'px';
+  });
+  
+  w.x = target.x;
+  w.y = target.y;
+  
+  // Schedule next move after this one finishes + random pause (1-3s)
+  const pause = 1000 + Math.random() * 2000;
+  w.moveTimer = setTimeout(() => moveWalkerById(id), duration * 1000 + pause);
 }
-setInterval(moveWalker, 4000);
+
+// Start walkers with staggered timing
+function startWalkers() {
+  let delay = 0;
+  for (const id of Object.keys(activeWalkers)) {
+    const w = activeWalkers[id];
+    if (w.moveTimer) clearTimeout(w.moveTimer);
+    setTimeout(() => moveWalkerById(id), delay);
+    delay += 800; // stagger each walker by 800ms
+  }
+}
 
 // Clock
 function updateClock() {
