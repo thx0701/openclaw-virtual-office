@@ -89,14 +89,18 @@ function loadConfig() {
 
 function getSessions() {
   try {
-    const out = execSync('openclaw sessions list --json', {
+    const out = execSync('openclaw sessions list --json 2>/dev/null', {
       timeout: 10000,
       encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'ignore'],
     });
-    const data = JSON.parse(out);
+    // Extract JSON from output (filter out Doctor warnings and other non-JSON output)
+    const jsonStart = out.indexOf('{');
+    const jsonStr = jsonStart >= 0 ? out.slice(jsonStart) : out;
+    const data = JSON.parse(jsonStr);
     return Array.isArray(data) ? data : (data.sessions || []);
   } catch (e) {
+    console.error('Failed to get sessions:', e.message);
     return [];
   }
 }
